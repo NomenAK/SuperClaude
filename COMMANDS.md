@@ -351,11 +351,14 @@ Professional Git operations with safety features.
 - `--checkpoint` - Create checkpoint
 - `--merge` - Smart merge
 - `--history` - History analysis
+- `--pre-commit` - Setup and run pre-commit hooks
 
 **Examples:**
 ```bash
 /git --checkpoint "before refactor"       # Safety checkpoint
 /git --commit --validate --test          # Safe commit
+/git --pre-commit                        # Setup pre-commit hooks
+/git --commit --pre-commit               # Commit with validation
 ```
 
 ### 🎨 Design & Architecture Commands (1)

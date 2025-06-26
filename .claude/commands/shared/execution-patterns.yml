@@ -293,6 +293,7 @@ Git_Workflows:
     Before_Commit:
       - "git status → Verify intended files"
       - "git diff --staged → Review changes"
+      - "Run pre-commit hooks if configured"
       - "Run tests if available"
       - "Check for secrets/credentials"
     Before_Push:

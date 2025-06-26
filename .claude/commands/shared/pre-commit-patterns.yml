@@ -1,0 +1,32 @@
+# Pre-commit Patterns
+# Simple pre-commit hook configuration and management
+
+```yaml
+Pre_Commit_Setup:
+  Install_Python: "uv add --dev pre-commit && uv run pre-commit install"
+  Install_Node: "npm install --save-dev pre-commit && npx pre-commit install"
+  Config: ".pre-commit-config.yaml"
+
+  Basic_Hooks:
+    - "trailing-whitespace"
+    - "end-of-file-fixer"
+    - "check-yaml"
+    - "check-json"
+    - "check-merge-conflict"
+
+  Language_Hooks:
+    Python: ["black", "ruff", "isort"]
+    JavaScript: ["eslint", "prettier"]
+    TypeScript: ["eslint", "prettier"]
+    Node: ["eslint", "prettier", "npm-audit"]
+
+  Security_Hooks:
+    - "detect-secrets"
+    - "bandit"
+
+  Commands:
+    Run_All: "pre-commit run --all-files"
+    Test_Hooks: "pre-commit run --hook-stage manual"
+    Skip_Hooks: "git commit --no-verify"
+    Update: "pre-commit autoupdate"
+```
