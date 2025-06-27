@@ -146,6 +146,8 @@ PRESERVE_FILES=(
     ".claude/todos"
     ".claude/statsig"
     ".claude/projects"
+    ".claude/local"
+    ".claude/local/*"
 )
 
 # Function: check_command
