@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/usr/bin/env bash
 
 # SuperClaude Installer Script
 # Installs SuperClaude configuration framework to enhance Claude Code
@@ -8,6 +8,16 @@
 
 set -e  # Exit on error
 set -o pipefail  # Exit on pipe failure
+
+
+# Check Bash version
+check_bash_version() {
+    local version_major=${BASH_VERSINFO[0]}
+    if (( version_major < MIN_BASH_VERSION )); then
+        echo -e "${RED}Error: Bash version $MIN_BASH_VERSION or higher is required.${NC}"
+        exit 1
+    fi
+}
 
 # Script version
 readonly SCRIPT_VERSION="2.0.0"
@@ -52,6 +62,12 @@ ROLLBACK_ON_FAILURE=true
 BACKUP_DIR=""
 INSTALLATION_PHASE=false
 
+
+# Error/Warning tracking
+ERROR_COUNT=0
+WARNING_COUNT=0
+ERROR_DETAILS=()
+WARNING_DETAILS=()
 # Original working directory
 ORIGINAL_DIR=$(pwd)
 
@@ -1843,3 +1859,28 @@ else
     echo "For manual installation, see README.md"
     exit 1
 fi
+
+# Check for required disk space
+check_disk_space() {
+    local available
+    available=$(df --output=avail "$INSTALL_DIR" 2>/dev/null | tail -1)
+    if [[ -z "$available" || "$available" -lt "$REQUIRED_SPACE_KB" ]]; then
+        echo -e "${RED}Error: Not enough disk space in $INSTALL_DIR.${NC}"
+        ((ERROR_COUNT++))
+        ERROR_DETAILS+=("Insufficient disk space for installation.")
+        return 1
+    fi
+}
+
+# Validate install directory
+validate_install_dir() {
+    if [[ ! -d "$(dirname "$INSTALL_DIR")" ]] || [[ ! -w "$(dirname "$INSTALL_DIR")" ]]; then
+        echo -e "${RED}Error: Cannot write to installation directory: $INSTALL_DIR${NC}"
+        exit 1
+    fi
+}
+
+# Rollback changes if enabled
+rollback_changes() {
+    echo -e "${YELLOW}Rolling back any changes... (not implemented yet)${NC}"
+}
