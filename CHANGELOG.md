@@ -5,6 +5,15 @@ All notable changes to SuperClaude will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+
+### Added
+- Natural Language Orchestrator - translate plain English to SuperClaude commands
+- 8 orchestrator documentation files in `.claude/orchestrator/`
+- `install-orchestrator.sh` for easy orchestrator installation
+- Comprehensive workflow templates for common development scenarios
+- Smart flag combination optimizer for better command generation
+
 ## [2.0.1] - 2025-06-26
 
 ### Added

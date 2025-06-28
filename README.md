@@ -41,6 +41,22 @@ SuperClaude enhances Claude Code with:
 - **Git Checkpoint Support** for safe experimentation
 - **Introspection Mode** for framework improvement and troubleshooting
 
+### 🗣️ Natural Language Orchestrator (Optional)
+
+SuperClaude now includes an optional orchestrator that translates natural language into commands:
+
+```bash
+# Install the orchestrator extension
+./install-orchestrator.sh
+```
+
+Instead of memorizing 19 commands, just describe what you want:
+- "Review my code for security" → `/review --security --evidence --persona-security`
+- "Build a React app" → `/build --react --feature --tdd --frontend`
+- "Deploy to production safely" → `/deploy --prod --critical --evidence --plan`
+
+See `.claude/orchestrator/README.md` for complete documentation.
+
 ## 🚀 Installation
 
 ### Enhanced Installer v2.0.1
