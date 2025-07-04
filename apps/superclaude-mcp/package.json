@@ -1,0 +1,81 @@
+{
+  "name": "superclaude-mcp",
+  "version": "0.1.0",
+  "description": "MCP server providing portable access to SuperClaude configuration framework with real-time updates",
+  "main": "dist/index.js",
+  "module": "dist/index.mjs",
+  "types": "dist/index.d.ts",
+  "type": "module",
+  "license": "MIT",
+  "packageManager": "pnpm@9.15.2",
+  "scripts": {
+    "dev": "tsx watch src/main.ts | pino-pretty",
+    "dev:http": "tsx watch src/main.ts --transport http | pino-pretty",
+    "build": "tsup",
+    "start": "node dist/main.js",
+    "start:http": "node dist/main.js --transport http",
+    "sync": "tsx src/main.ts sync",
+    "sync:snapshot": "tsx src/main.ts sync && cp ~/.superclaude/data/db.json ./tests/data/snapshot.db.json",
+    "report": "tsx src/main.ts report",
+    "report:detailed": "tsx src/main.ts report --detailed",
+    "config": "tsx src/main.ts config show",
+    "test": "vitest --run",
+    "test:github": "vitest --run tests/github-loader",
+    "test:db": "vitest --run tests/services/database-service.test.ts",
+    "test:sync": "vitest --run tests/services/sync-service.test.ts",
+    "test:watch": "vitest --watch",
+    "test:ui": "vitest --ui --run",
+    "test:e2e": "pnpm build && vitest --run tests/e2e-build.test.ts",
+    "lint": "tsc --noEmit && prettier --check .",
+    "lint:prettier": "prettier --check .",
+    "format": "prettier --write .",
+    "check:types": "tsc --noEmit",
+    "clean:data": "rm -rf ~/.superclaude/data",
+    "clean:config": "rm -f ~/.superclaude/config.json",
+    "clean:dist": "rm -rf dist",
+    "clean:modules": "rm -rf node_modules",
+    "clean:test-fixtures": "rm -rf tests/fixtures/*.json",
+    "clean": "pnpm clean:data && pnpm clean:dist && pnpm clean:modules && pnpm clean:test-fixtures",
+    "docker:build": "docker buildx bake -f docker-bake.hcl local",
+    "docker:build:dev": "docker buildx bake -f docker-bake.hcl development",
+    "docker:compose:up": "docker compose up -d"
+  },
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js",
+      "require": "./dist/index.cjs"
+    }
+  },
+  "files": [
+    "dist"
+  ],
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.13.0",
+    "axios": "^1.7.9",
+    "commander": "^14.0.0",
+    "express": "^4.21.2",
+    "js-yaml": "^4.1.0",
+    "lowdb": "^7.0.1",
+    "pino": "^9.5.0",
+    "pino-http": "^10.3.0",
+    "yaml": "^2.8.0",
+    "zod": "^3.23.8",
+    "chalk": "4"
+  },
+  "devDependencies": {
+    "@faker-js/faker": "^9.9.0",
+    "@types/express": "^5.0.0",
+    "@types/js-yaml": "^4.0.9",
+    "@types/node": "^22.16.0",
+    "@vitest/coverage-v8": "^3.2.4",
+    "pino-pretty": "^11.3.0",
+    "prettier": "^3.6.2",
+    "tree-cli": "^0.6.7",
+    "tsup": "^8.3.5",
+    "tsx": "^4.19.2",
+    "typescript": "^5.7.2",
+    "vitest": "^2.1.8",
+    "vitest-mock-extended": "^3.1.0"
+  }
+}

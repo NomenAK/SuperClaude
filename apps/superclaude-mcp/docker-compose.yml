@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+  superclaude-mcp:
+    image: superclaude-mcp:local
+    ports:
+      - "8080:8080"
+    environment:
+      - NODE_ENV=production
+      - LOG_LEVEL=info
+    volumes:
+      - ${HOME}/.superclaude:/home/node/.superclaude

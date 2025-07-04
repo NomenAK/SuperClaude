@@ -1,0 +1,34 @@
+{
+  "compilerOptions": {
+    "target": "ES2022",
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "lib": ["ES2022"],
+    "types": ["node"],
+    "outDir": "./dist",
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+      "@services/*": ["src/services/*"],
+      "@scripts/*": ["src/scripts/*"],
+      "@utils/*": ["src/utils/*"],
+      "@tests/*": ["tests/*"],
+      "@types": ["src/types.js"],
+      "@database": ["src/database.js"],
+      "@logger": ["src/logger.js"],
+      "@schemas": ["src/schemas.js"]
+    },
+    "strict": false,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "forceConsistentCasingInFileNames": true,
+    "declaration": true,
+    "declarationMap": true,
+    "sourceMap": true,
+    "noImplicitAny": true,
+    "resolveJsonModule": true,
+    "allowSyntheticDefaultImports": true
+  },
+  "include": ["src/**/*", "tests/**/*", "vitest.config.ts", "package.json"],
+  "exclude": ["node_modules", "dist"]
+}
