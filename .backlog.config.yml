@@ -1,0 +1,62 @@
+# Backlog.md Configuration for SuperClaude
+# This file configures the Backlog.md integration
+
+# Kanban board columns
+columns:
+  - todo
+  - in-progress
+  - done
+  - archive
+
+# Default filters for views
+default_filters:
+  board: ""  # Show all tasks
+  list: "status:!archived"  # Hide archived tasks
+
+# Task ID configuration
+task_id:
+  prefix: "task"
+  padding: 3  # Zero-pad to 3 digits (001, 002, etc.)
+
+# Automatic behaviors
+auto_behaviors:
+  # Move task to in-progress when first todo is started
+  start_on_first_todo: true
+  # Move task to done when all todos are completed
+  complete_on_all_todos: true
+  # Archive tasks older than N days
+  archive_after_days: 30
+
+# Integration settings
+integration:
+  # Sync with TodoWrite/TodoRead
+  sync_todos: true
+  # Create git branch on task start
+  auto_branch: true
+  # Branch naming pattern
+  branch_pattern: "feature/task-{id}-{slug}"
+
+# Display settings
+display:
+  # Show task IDs in board view
+  show_ids: true
+  # Show assignees
+  show_assignees: true
+  # Show priority indicators
+  show_priority: true
+  # Date format
+  date_format: "YYYY-MM-DD"
+
+# Personas with task management focus
+task_personas:
+  planner:
+    description: "Strategic task planning and prioritization"
+    auto_activate:
+      - "/backlog create"
+      - "plan new feature"
+  
+  executor:
+    description: "Focused task execution and completion"
+    auto_activate:
+      - "/backlog move * in-progress"
+      - "work on task"

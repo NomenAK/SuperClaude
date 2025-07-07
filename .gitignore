@@ -9,6 +9,13 @@ logs/
 # Task management (project-specific)
 ./claudedocs/tasks/
 
+# Backlog.md task management
+.backlog/*/task-*.md
+!.backlog/*/task-001 - Integrate Backlog.md with SuperClaude.md
+.backlog/.metrics/
+.backlog/*.tmp
+.backlog/*.swp
+
 # System files
 .DS_Store
 Thumbs.db

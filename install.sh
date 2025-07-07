@@ -46,7 +46,7 @@ else
 fi
 
 # Configuration patterns
-readonly -a CUSTOMIZABLE_CONFIGS=("CLAUDE.md" "RULES.md" "PERSONAS.md" "MCP.md")
+readonly -a CUSTOMIZABLE_CONFIGS=("CLAUDE.md" "RULES.md" "PERSONAS.md" "MCP.md" "BACKLOG.md")
 
 # Default settings
 INSTALL_DIR="$HOME/.claude"
@@ -164,6 +164,9 @@ PRESERVE_FILES=(
     ".claude/projects"
     ".claude/local"
     ".claude/local/*"
+    ".backlog/*/task-*.md"
+    ".backlog/.metrics/*"
+    ".backlog.config.yml"
 )
 
 # Function: check_command
@@ -670,6 +673,26 @@ get_source_files() {
         # Also include CLAUDE.md from root if it exists
         if [[ -f "CLAUDE.md" ]]; then
             echo "CLAUDE.md"
+        fi
+        
+        # Include BACKLOG.md if it exists
+        if [[ -f ".claude/BACKLOG.md" ]]; then
+            echo "BACKLOG.md"
+        fi
+        
+        # Include shared/backlog files if they exist
+        if [[ -d "shared/backlog" ]]; then
+            find shared/backlog -type f -name "*.yml" 2>/dev/null | sort
+        fi
+        
+        # Include .backlog/README.md if it exists
+        if [[ -f ".backlog/README.md" ]]; then
+            echo ".backlog/README.md"
+        fi
+        
+        # Include .backlog.config.yml if it exists
+        if [[ -f ".backlog.config.yml" ]]; then
+            echo ".backlog.config.yml"
         fi
         
         return 0
@@ -1487,8 +1510,23 @@ if [[ "$DRY_RUN" != true ]]; then
             }
         fi
     done
+    
+    # Create Backlog.md directory structure
+    echo "Creating Backlog.md structure..."
+    for backlog_dir in ".backlog/todo" ".backlog/in-progress" ".backlog/done" ".backlog/archive" ".backlog/.metrics"; do
+        mkdir -p "$INSTALL_DIR/$backlog_dir" || {
+            log_error "Failed to create Backlog.md directory: $INSTALL_DIR/$backlog_dir"
+            exit 1
+        }
+    done
+    
+    # Create .gitkeep files to preserve directory structure
+    for backlog_dir in "todo" "in-progress" "done" "archive"; do
+        touch "$INSTALL_DIR/.backlog/$backlog_dir/.gitkeep" 2>/dev/null || true
+    done
 else
     echo "Would create directory structure..."
+    echo "Would create Backlog.md structure..."
 fi
 
 # Function to copy files with update mode handling and integrity verification
@@ -1665,6 +1703,12 @@ while IFS= read -r file; do
         # Determine source file path
         if [[ "$file" == "CLAUDE.md" ]]; then
             src_file="./$file"
+        elif [[ "$file" == ".backlog.config.yml" ]]; then
+            src_file="./$file"
+        elif [[ "$file" == shared/backlog/* ]]; then
+            src_file="./$file"
+        elif [[ "$file" == .backlog/* ]]; then
+            src_file="./$file"
         else
             src_file="./.claude/$file"
         fi
@@ -1820,6 +1864,12 @@ if [ "$actual_files" -ge "$expected_files" ] && [ "$critical_files_ok" = true ] 
         echo "1. Open any project with Claude Code"
         echo "2. Try a command: /analyze --code"
         echo "3. Activate a persona: /analyze --persona-architect"
+        echo "4. Manage tasks visually: /backlog board"
+        echo ""
+        echo "Backlog.md Integration:"
+        echo "  • Task management: /backlog create 'Your first task'"
+        echo "  • Kanban board: /backlog board"
+        echo "  • Natural language: 'Show my tasks'"
         echo ""
     fi
     if [ -n "$BACKUP_DIR" ] && [ -d "$BACKUP_DIR" ]; then

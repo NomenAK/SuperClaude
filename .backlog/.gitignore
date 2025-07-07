@@ -1,0 +1,17 @@
+# Ignore all task files by default
+*/task-*.md
+
+# But keep example tasks
+!*/task-001 - Integrate Backlog.md with SuperClaude.md
+
+# Keep directory structure
+!.gitkeep
+!README.md
+
+# Ignore metrics and temporary files
+.metrics/
+*.tmp
+*.swp
+
+# Keep configuration
+!.claude/.backlog.config.yml

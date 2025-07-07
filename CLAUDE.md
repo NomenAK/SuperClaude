@@ -35,6 +35,16 @@ You should use the following configuration to guide your behavior.
 @include shared/superclaude-core.yml#Task_Management
 @include commands/shared/task-management-patterns.yml#Task_Management_Hierarchy
 
+### Backlog.md Integration
+SuperClaude now includes Backlog.md for visual task management:
+- **Kanban Board**: Use `/backlog board` to view tasks visually
+- **Task Storage**: Tasks stored as markdown in `.backlog/{status}/`
+- **Natural Language**: "Show my tasks", "Move task 42 to done"
+- **Auto-sync**: TodoWrite/TodoRead sync with Backlog.md automatically
+
+@include shared/backlog/backlog-patterns.yml#Backlog_Architecture
+@include shared/backlog/backlog-implementation.yml#Integration_Logic
+
 ## Performance Standards
 @include shared/superclaude-core.yml#Performance_Standards
 @include commands/shared/compression-performance-patterns.yml#Performance_Baselines

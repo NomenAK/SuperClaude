@@ -1,0 +1,193 @@
+# Backlog.md Integration Patterns for SuperClaude
+
+Backlog_Architecture:
+  overview: |
+    Backlog.md provides markdown-native task management with Kanban visualization
+    Integrates seamlessly with SuperClaude's two-tier task system
+    
+  storage_layer:
+    format: "Markdown files with YAML frontmatter"
+    location: "./.backlog/{status}/"
+    statuses:
+      - todo
+      - in-progress
+      - done
+      - archive
+    
+  file_naming:
+    pattern: "task-{id} - {title}.md"
+    examples:
+      - "task-001 - Implement user authentication.md"
+      - "task-042 - Fix critical bug in parser.md"
+
+Task_Schema:
+  frontmatter:
+    required:
+      id: "Unique task identifier (task-XXX)"
+      title: "Task title"
+      status: "Current status (todo|in-progress|done|archive)"
+      created: "ISO date of creation"
+    
+    optional:
+      assignee: "Task assignee (@username or ai-claude)"
+      priority: "Task priority (critical|high|medium|low)"
+      labels: "Array of labels [feature, bug, docs]"
+      updated: "ISO date of last update"
+      due_date: "ISO date for deadline"
+      dependencies: "Array of task IDs this depends on"
+      blocked_by: "Array of task IDs blocking this"
+      time_estimate: "Estimated time (e.g., 2h, 1d)"
+      time_spent: "Actual time spent"
+      
+    superclaude_integration:
+      session_id: "SuperClaude session identifier"
+      branch: "Git branch name"
+      checkpoint: "Recovery checkpoint ID"
+      todos: "Subtasks synced from TodoWrite"
+      context: "Preserved session context"
+      
+  content_sections:
+    description: "Main task description"
+    acceptance_criteria: "Checklist of completion requirements"
+    notes: "Implementation notes, discoveries, blockers"
+    references: "Links, PRs, issues, documentation"
+    session_log: "SuperClaude session history"
+
+Backlog_Operations:
+  create_task:
+    process:
+      1: "Generate next task ID"
+      2: "Create markdown file with frontmatter"
+      3: "Initialize in .backlog/todo/ directory"
+      4: "Sync with SuperClaude task system"
+      5: "Create git branch if requested"
+    
+    auto_enrichment:
+      - "Add creation timestamp"
+      - "Set initial status to 'todo'"
+      - "Generate session_id"
+      - "Extract labels from title/description"
+  
+  move_task:
+    validations:
+      - "Task exists"
+      - "Valid target status"
+      - "Dependencies resolved (for done)"
+    
+    process:
+      1: "Update frontmatter status"
+      2: "Move file to new directory"
+      3: "Update timestamp"
+      4: "Trigger status hooks"
+      5: "Sync with active todos"
+  
+  board_visualization:
+    terminal_mode:
+      layout: "Column-based ASCII table"
+      features:
+        - "Color coding by priority"
+        - "Assignee indicators"
+        - "Label badges"
+        - "Progress indicators"
+    
+    filter_support:
+      by_assignee: "--assignee=@username"
+      by_label: "--label=feature"
+      by_priority: "--priority=high"
+      my_tasks: "--mine"
+      
+Integration_Patterns:
+  with_todos:
+    sync_direction: "Bidirectional"
+    mapping:
+      todo_item: "Becomes subtask in task file"
+      todo_status: "Updates task progress percentage"
+      todo_completion: "Triggers task status evaluation"
+    
+    auto_sync_triggers:
+      - "TodoWrite operations"
+      - "Task status changes"
+      - "Session recovery"
+  
+  with_task_command:
+    enhanced_operations:
+      create: "Creates both SuperClaude task and Backlog.md file"
+      resume: "Loads from Backlog.md with full context"
+      status: "Shows Backlog.md board view"
+      complete: "Moves to done/ and archives after review"
+    
+    shared_context:
+      - "Session state"
+      - "Git branch"
+      - "Progress tracking"
+      - "Dependencies"
+  
+  with_git:
+    branch_pattern: "feature/task-{id}-{slug}"
+    commit_tracking: "Store commit SHAs in task metadata"
+    pr_integration: "Link PRs in task references"
+    auto_branch: "On task start"
+
+AI_Commands:
+  natural_language:
+    examples:
+      - "Show my tasks"
+      - "Move task 42 to in progress"
+      - "Create a high priority bug task"
+      - "What tasks are blocked?"
+    
+  context_aware:
+    - "Understands current task context"
+    - "Suggests next tasks based on dependencies"
+    - "Auto-updates based on code changes"
+    - "Tracks time automatically"
+
+Workflow_Patterns:
+  standard_flow:
+    1: "/backlog create 'New feature'"
+    2: "/backlog move {id} in-progress"
+    3: "Work with todos syncing automatically"
+    4: "/backlog move {id} done"
+    5: "Review and archive after sprint"
+  
+  quick_task:
+    1: "/bl c 'Quick fix' --priority=high"
+    2: "Auto-moves to in-progress on first todo"
+    3: "Auto-completes when all todos done"
+  
+  sprint_planning:
+    1: "/backlog list --status=todo"
+    2: "Assign tasks to sprint"
+    3: "/backlog board --sprint=current"
+    4: "Track velocity and burndown"
+
+Quality_Standards:
+  task_quality:
+    title: "Descriptive and searchable"
+    description: "Clear problem statement"
+    criteria: "Measurable completion definition"
+    estimates: "Realistic time assessments"
+  
+  board_hygiene:
+    archive_completed: "Weekly archival of done tasks"
+    update_stale: "Flag tasks in-progress > 1 week"
+    dependency_check: "Validate before moving to done"
+    
+Best_Practices:
+  task_creation:
+    - "One task = one deliverable"
+    - "Include acceptance criteria"
+    - "Add relevant labels immediately"
+    - "Link related tasks"
+  
+  board_management:
+    - "Daily board review"
+    - "Keep WIP limits (3-5 tasks)"
+    - "Regular grooming sessions"
+    - "Archive completed monthly"
+  
+  integration:
+    - "Let todos auto-sync"
+    - "Use task context for branches"
+    - "Track session data for recovery"
+    - "Leverage natural language commands"

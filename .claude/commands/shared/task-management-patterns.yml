@@ -4,27 +4,37 @@
 ## Legend
 @include universal-constants.yml#Universal_Legend
 
-## Two-Tier Architecture
+## Two-Tier Architecture with Backlog.md Integration
 
 ```yaml
 Task_Management_Hierarchy:
-  Level_1_Tasks: "High-level features (./claudedocs/tasks/ folders)"
+  Level_1_Tasks: "High-level features (Backlog.md + ./claudedocs/tasks/)"
     Purpose: "Session persistence, git branching, requirement tracking"
     Scope: "Features spanning multiple sessions"
     Examples: ["build auth system", "implement dashboard", "create API"]
-    Format: "Comprehensive markdown files w/ full context"
+    Format: "Markdown files with YAML frontmatter in backlog/{status}/"
+    Storage_Options:
+      Primary: ".backlog/{status}/task-{id} - {title}.md"
+      Legacy: "./claudedocs/tasks/ folders (auto-migrated to Backlog.md)"
     
   Level_2_Todos: "Immediate actionable steps (TodoWrite/TodoRead)"
     Purpose: "Real-time execution tracking within session"
     Scope: "Current session specific actions"
     Examples: ["Update user.js", "Add validation", "Write test"]
     Format: "JSON objects w/ status tracking"
+    Sync: "Auto-synced to task.todos in Backlog.md"
 
 Integration_Flow:
-  Task_Creation: "User request → Task breakdown → Todo generation"
-  Session_Start: "Scan tasks → Load context → Generate todos"
-  Progress_Sync: "Todo completion → Task progress update"
-  Session_End: "Save context → Update task status"
+  Task_Creation: "User request → .backlog file → Todo generation"
+  Session_Start: "Scan .backlog/in-progress/ → Load context → Generate todos"
+  Progress_Sync: "Todo completion → Update .backlog → Board refresh"
+  Session_End: "Save context to .backlog → Update task status"
+  
+Backlog_Integration:
+  File_Structure: ".backlog/{todo,in-progress,done,archive}/"
+  Kanban_Board: "/backlog board for visual task management"
+  Natural_Language: "Claude, show my tasks / move task 42 to done"
+  Git_Aware: "Branch names stored in task metadata"
 ```
 
 ## Auto-Trigger Detection Patterns
@@ -139,10 +149,16 @@ Task_Progress_Tracking:
     Learning_Capture: "New knowledge & insights gained"
 
 Task_Recovery_Integration:
-  Session_Detection: "Scan ./claudedocs/tasks/in-progress/"
-  Context_Restoration: "Load task state, decisions, blockers"
-  Todo_Regeneration: "Create current phase todos from task state"
-  Seamless_Resume: "Continue where previous session left off"
+  Session_Detection: "Scan .backlog/in-progress/ for active tasks"
+  Context_Restoration: "Load from .backlog frontmatter + content"
+  Todo_Regeneration: "Sync from task.superclaude.todos section"
+  Seamless_Resume: "Continue with full Kanban context"
+  
+Backlog_Recovery:
+  Primary_Source: ".backlog/{status}/task-*.md files"
+  Legacy_Migration: "Auto-convert ./claudedocs/tasks/ to Backlog.md"
+  Session_Linking: "Match by superclaude.session_id"
+  Branch_Recovery: "Restore from task.superclaude.branch"
 ```
 
 ## Todo Integration Patterns
