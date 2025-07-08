@@ -1,0 +1,184 @@
+name: Release
+
+on:
+  push:
+    branches: [ main, master ]
+    paths: [ 'trigger_release.txt' ]
+  workflow_dispatch:
+    inputs:
+      version_type:
+        description: 'Version bump type'
+        required: true
+        default: 'patch'
+        type: choice
+        options:
+          - patch
+          - minor
+          - major
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    if: contains(github.event.head_commit.message, '[release]') || github.event_name == 'workflow_dispatch'
+    
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+        token: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Configure Git
+      run: |
+        git config --global user.name 'github-actions[bot]'
+        git config --global user.email 'github-actions[bot]@users.noreply.github.com'
+
+    - name: Set version type
+      id: version_type
+      run: |
+        if [[ "${{ github.event_name }}" == "workflow_dispatch" ]]; then
+          echo "type=${{ github.event.inputs.version_type }}" >> $GITHUB_OUTPUT
+        else
+          # Extract version type from commit message or default to patch
+          if [[ "${{ github.event.head_commit.message }}" =~ \[release:([^]]+)\] ]]; then
+            echo "type=${BASH_REMATCH[1]}" >> $GITHUB_OUTPUT
+          else
+            echo "type=patch" >> $GITHUB_OUTPUT
+          fi
+        fi
+
+    - name: Get current version
+      id: current_version
+      run: |
+        if [[ -f "VERSION" ]]; then
+          VERSION=$(cat VERSION | tr -d '\n\r' | xargs)
+          echo "version=$VERSION" >> $GITHUB_OUTPUT
+        else
+          echo "version=0.0.0" >> $GITHUB_OUTPUT
+        fi
+
+    - name: Bump version
+      id: bump_version
+      run: |
+        VERSION_TYPE="${{ steps.version_type.outputs.type }}"
+        CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+        
+        # Parse version numbers
+        IFS='.' read -r -a VERSION_PARTS <<< "$CURRENT_VERSION"
+        MAJOR=${VERSION_PARTS[0]}
+        MINOR=${VERSION_PARTS[1]}
+        PATCH=${VERSION_PARTS[2]}
+        
+        # Bump version based on type
+        case $VERSION_TYPE in
+          major)
+            MAJOR=$((MAJOR + 1))
+            MINOR=0
+            PATCH=0
+            ;;
+          minor)
+            MINOR=$((MINOR + 1))
+            PATCH=0
+            ;;
+          patch)
+            PATCH=$((PATCH + 1))
+            ;;
+        esac
+        
+        NEW_VERSION="${MAJOR}.${MINOR}.${PATCH}"
+        echo "new_version=$NEW_VERSION" >> $GITHUB_OUTPUT
+        
+        # Update VERSION file
+        echo "$NEW_VERSION" > VERSION
+        
+        # Update CLAUDE.md if it exists
+        if [[ -f "CLAUDE.md" ]]; then
+          sed -i "s/SuperClaude v[0-9]\+\.[0-9]\+\.[0-9]\+/SuperClaude v${NEW_VERSION}/g" CLAUDE.md
+        fi
+
+    - name: Generate changelog
+      run: |
+        # Make scripts executable
+        chmod +x scripts/generate-changelog.sh
+        
+        # Generate changelog
+        ./scripts/generate-changelog.sh
+
+    - name: Generate release notes
+      id: release_notes
+      run: |
+        # Generate release notes
+        RELEASE_NOTES=$(./scripts/generate-changelog.sh --release-notes)
+        
+        # Create multiline output
+        {
+          echo 'notes<<EOF'
+          echo "$RELEASE_NOTES"
+          echo 'EOF'
+        } >> $GITHUB_OUTPUT
+
+    - name: Commit and tag
+      run: |
+        NEW_VERSION="${{ steps.bump_version.outputs.new_version }}"
+        CURRENT_VERSION="${{ steps.current_version.outputs.version }}"
+        
+        # Add all changes
+        git add -A
+        
+        # Commit changes
+        git commit -m "chore: release v${NEW_VERSION}
+
+        - Version updated from ${CURRENT_VERSION} to ${NEW_VERSION}
+        - Changelog updated with latest changes
+        - Automated release via GitHub Actions
+        
+        [release]" || echo "No changes to commit"
+        
+        # Create tag
+        git tag -a "v${NEW_VERSION}" -m "Release v${NEW_VERSION}
+        
+        ${{ steps.release_notes.outputs.notes }}"
+        
+        # Push changes and tags
+        git push origin ${{ github.ref_name }}
+        git push origin "v${NEW_VERSION}"
+
+    - name: Create GitHub Release
+      uses: softprops/action-gh-release@v1
+      with:
+        tag_name: v${{ steps.bump_version.outputs.new_version }}
+        name: SuperClaude v${{ steps.bump_version.outputs.new_version }}
+        body: |
+          # SuperClaude v${{ steps.bump_version.outputs.new_version }}
+          
+          ${{ steps.release_notes.outputs.notes }}
+          
+          ## Installation
+          
+          ```bash
+          curl -fsSL https://raw.githubusercontent.com/NomenAK/SuperClaude/main/install.sh | bash
+          ```
+          
+          ## What's Changed
+          
+          Full changelog: https://github.com/NomenAK/SuperClaude/blob/main/CHANGELOG.md
+          
+          ---
+          
+          🤖 *This release was automatically generated by GitHub Actions*
+        draft: false
+        prerelease: false
+        generate_release_notes: true
+      env:
+        GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    - name: Clean up trigger file
+      if: contains(github.event.head_commit.message, '[release]') == false
+      run: |
+        # Remove trigger file if it exists and was used to trigger this workflow
+        if [[ -f "trigger_release.txt" ]]; then
+          rm trigger_release.txt
+          git add trigger_release.txt
+          git commit -m "chore: clean up release trigger file" || echo "No changes to commit"
+          git push origin ${{ github.ref_name }}
+        fi

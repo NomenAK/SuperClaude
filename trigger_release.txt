@@ -1,0 +1,46 @@
+# SuperClaude Release Trigger
+
+This file is used to trigger automated releases via GitHub Actions.
+
+## How to Use
+
+1. **Manual Script Method** (Recommended):
+   ```bash
+   ./scripts/bump-version.sh [major|minor|patch]
+   git push origin main --tags
+   ```
+
+2. **GitHub Actions Workflow Dispatch**:
+   - Go to Actions tab on GitHub
+   - Select "Release" workflow
+   - Click "Run workflow"
+   - Choose version bump type
+
+3. **Commit Message Trigger**:
+   - Include `[release]` in commit message
+   - Include `[release:major]`, `[release:minor]`, or `[release:patch]` for specific version bumps
+
+4. **Trigger File Method**:
+   - Edit this file
+   - Commit with message containing `[release]`
+   - Push to main branch
+
+## Release Process
+
+The automated release process will:
+- ✅ Bump version in VERSION file
+- ✅ Update CLAUDE.md with new version
+- ✅ Generate changelog from git commits
+- ✅ Create git tag
+- ✅ Create GitHub release with release notes
+- ✅ Clean up trigger file
+
+## Version Types
+
+- **patch**: Bug fixes and small improvements (0.0.1 → 0.0.2)
+- **minor**: New features, backward compatible (0.1.0 → 0.2.0)  
+- **major**: Breaking changes (1.0.0 → 2.0.0)
+
+---
+
+*Last updated: $(date)*
