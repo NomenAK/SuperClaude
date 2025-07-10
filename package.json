@@ -1,0 +1,83 @@
+{
+  "name": "superaugment",
+  "version": "2.0.1",
+  "description": "Enterprise-grade MCP server with world-class C++ analysis, robust error handling, and production-ready architecture for VS Code Augment",
+  "keywords": [
+    "mcp",
+    "model-context-protocol",
+    "vscode",
+    "augment",
+    "development-tools",
+    "ai-assistant",
+    "typescript",
+    "cpp-analysis",
+    "code-analysis",
+    "cognitive-personas",
+    "enterprise",
+    "production-ready",
+    "error-handling",
+    "performance",
+    "testing",
+    "schema-conversion"
+  ],
+  "homepage": "https://github.com/oktetopython/SuperAugment#readme",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/oktetopython/SuperAugment.git"
+  },
+  "bugs": {
+    "url": "https://github.com/oktetopython/SuperAugment/issues"
+  },
+  "license": "MIT",
+  "author": "oktetopython",
+  "main": "dist/index.js",
+  "bin": {
+    "superaugment": "dist/index.js"
+  },
+  "type": "module",
+  "files": [
+    "dist",
+    "config",
+    "README.md",
+    "LICENSE"
+  ],
+  "scripts": {
+    "build": "tsc",
+    "dev": "tsx watch src/index.ts",
+    "start": "node dist/index.js",
+    "test": "jest",
+    "test:cpp": "node scripts/test-cpp-analysis.js",
+    "lint": "eslint src/**/*.ts",
+    "lint:fix": "eslint src/**/*.ts --fix",
+    "clean": "rimraf dist",
+    "prepare": "npm run build"
+  },
+  "dependencies": {
+    "@modelcontextprotocol/sdk": "^0.5.0",
+    "fs-extra": "^11.2.0",
+    "glob": "^10.3.10",
+    "winston": "^3.11.0",
+    "yaml": "^2.3.4",
+    "zod": "^3.22.4",
+    "zod-to-json-schema": "^3.24.6",
+    "tree-sitter": "^0.21.0",
+    "tree-sitter-cpp": "^0.22.0",
+    "node-gyp": "^10.0.0"
+  },
+  "devDependencies": {
+    "@types/fs-extra": "^11.0.4",
+    "@types/jest": "^29.5.8",
+    "@types/node": "^20.10.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.0",
+    "@typescript-eslint/parser": "^6.13.0",
+    "eslint": "^8.54.0",
+    "jest": "^29.7.0",
+    "rimraf": "^5.0.5",
+    "ts-jest": "^29.1.1",
+    "tsx": "^4.6.0",
+    "typescript": "^5.3.0"
+  },
+  "engines": {
+    "node": ">=18.0.0"
+  }
+}

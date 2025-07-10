@@ -1,0 +1,39 @@
+server:
+  timeout: 30000  # 30 seconds
+
+logging:
+  level: "info"
+  maxSize: 5242880  # 5MB in bytes
+
+performance:
+  maxMemoryUsage: 134217728  # 128MB in bytes
+  maxExecutionTime: 30000  # 30 seconds
+  enableMetrics: true
+
+security:
+  enableSanitization: true
+  maxFileSize: 10485760  # 10MB in bytes
+  allowedExtensions:
+    - ".js"
+    - ".ts"
+    - ".jsx"
+    - ".tsx"
+    - ".py"
+    - ".java"
+    - ".go"
+    - ".rs"
+    - ".cpp"
+    - ".hpp"
+    - ".c"
+    - ".h"
+    - ".cs"
+
+languages:
+  - "javascript"
+  - "typescript"
+  - "python"
+  - "java"
+  - "go"
+  - "rust"
+  - "cpp"
+  - "csharp"

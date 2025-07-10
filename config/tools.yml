@@ -1,0 +1,262 @@
+tools:
+  - name: analyze_code
+    description: "Analyze code files or direct code content for quality, patterns, issues, and improvements"
+    category: "analysis"
+    parameters:
+      files:
+        type: "array"
+        description: "Array of file paths or glob patterns to analyze"
+        required: false
+      code:
+        type: "string"
+        description: "Code content to analyze directly"
+        required: false
+      projectPath:
+        type: "string"
+        description: "Project root path (defaults to current directory)"
+        required: false
+      persona:
+        type: "string"
+        description: "Cognitive persona to use for analysis"
+        required: false
+        enum: ["architect", "frontend", "backend", "security", "qa", "performance", "analyzer", "refactorer", "mentor"]
+      depth:
+        type: "string"
+        description: "Analysis depth"
+        required: false
+        enum: ["basic", "detailed", "comprehensive"]
+        default: "detailed"
+      focus:
+        type: "array"
+        description: "Specific areas to focus on"
+        required: false
+      language:
+        type: "string"
+        description: "Programming language (auto-detected if not specified)"
+        required: false
+      includeMetrics:
+        type: "boolean"
+        description: "Include code metrics in analysis"
+        required: false
+        default: true
+    personas: ["architect", "analyzer", "refactorer", "mentor"]
+    examples:
+      - description: "Analyze TypeScript files with architect persona"
+        parameters:
+          files: ["src/**/*.ts"]
+          persona: "architect"
+          depth: "comprehensive"
+      - description: "Analyze direct code with security focus"
+        parameters:
+          code: "function example() { return 'hello'; }"
+          persona: "security"
+          focus: ["security", "performance"]
+
+  - name: analyze_project
+    description: "Analyze project structure, dependencies, and overall architecture"
+    category: "analysis"
+    parameters:
+      projectPath:
+        type: "string"
+        description: "Project root path (defaults to current directory)"
+        required: false
+      persona:
+        type: "string"
+        description: "Cognitive persona to use for analysis"
+        required: false
+        enum: ["architect", "frontend", "backend", "security", "qa", "performance", "analyzer", "refactorer", "mentor"]
+      includeFileTree:
+        type: "boolean"
+        description: "Include detailed file tree in output"
+        required: false
+        default: false
+      analyzeDependencies:
+        type: "boolean"
+        description: "Analyze package dependencies"
+        required: false
+        default: true
+      detectIssues:
+        type: "boolean"
+        description: "Detect potential project issues"
+        required: false
+        default: true
+    personas: ["architect", "analyzer"]
+    examples:
+      - description: "Analyze project with architect perspective"
+        parameters:
+          persona: "architect"
+          includeFileTree: true
+      - description: "Quick project overview"
+        parameters:
+          analyzeDependencies: false
+          detectIssues: false
+
+  - name: review_code
+    description: "Perform comprehensive code reviews with cognitive persona expertise"
+    category: "analysis"
+    parameters:
+      pullRequest:
+        type: "number"
+        description: "Pull request number to review"
+        required: false
+      files:
+        type: "array"
+        description: "Specific files to review"
+        required: false
+      diff:
+        type: "string"
+        description: "Code diff to review"
+        required: false
+      persona:
+        type: "string"
+        description: "Cognitive persona for review approach"
+        required: false
+        enum: ["architect", "frontend", "backend", "security", "qa", "performance", "analyzer", "refactorer", "mentor"]
+      criteria:
+        type: "array"
+        description: "Review criteria"
+        required: false
+      severity:
+        type: "string"
+        description: "Review severity level"
+        required: false
+        enum: ["low", "medium", "high"]
+        default: "medium"
+    personas: ["qa", "security", "refactorer", "mentor"]
+
+  - name: security_scan
+    description: "Perform security vulnerability scans with specialized security expertise"
+    category: "analysis"
+    parameters:
+      target:
+        type: "string"
+        description: "Target to scan (file, directory, or application)"
+        required: true
+      scanType:
+        type: "string"
+        description: "Type of security scan"
+        required: false
+        enum: ["static", "dynamic", "dependency", "comprehensive"]
+        default: "static"
+      persona:
+        type: "string"
+        description: "Security persona for specialized scanning"
+        required: false
+        enum: ["security"]
+      depth:
+        type: "string"
+        description: "Scan depth"
+        required: false
+        enum: ["basic", "standard", "deep"]
+        default: "standard"
+      frameworks:
+        type: "array"
+        description: "Frameworks to consider in scan"
+        required: false
+    personas: ["security"]
+
+  - name: build_project
+    description: "Build projects with intelligent configuration and persona-driven approaches"
+    category: "build"
+    parameters:
+      type:
+        type: "string"
+        description: "Project type to build"
+        required: true
+        enum: ["react", "node", "python", "rust", "go", "java"]
+      features:
+        type: "array"
+        description: "Features to include"
+        required: false
+      persona:
+        type: "string"
+        description: "Development persona for build approach"
+        required: false
+        enum: ["frontend", "backend", "architect"]
+      environment:
+        type: "string"
+        description: "Build environment"
+        required: false
+        enum: ["development", "staging", "production"]
+        default: "development"
+      optimization:
+        type: "boolean"
+        description: "Enable build optimizations"
+        required: false
+        default: false
+      target:
+        type: "string"
+        description: "Build target directory"
+        required: false
+    personas: ["frontend", "backend", "architect"]
+
+  - name: test_project
+    description: "Run comprehensive tests with persona-driven testing strategies"
+    category: "build"
+    parameters:
+      type:
+        type: "string"
+        description: "Type of tests to run"
+        required: true
+        enum: ["unit", "integration", "e2e", "performance", "security"]
+      coverage:
+        type: "boolean"
+        description: "Generate coverage report"
+        required: false
+        default: false
+      files:
+        type: "array"
+        description: "Specific files or patterns to test"
+        required: false
+      persona:
+        type: "string"
+        description: "Testing persona for approach"
+        required: false
+        enum: ["qa", "security", "performance"]
+      framework:
+        type: "string"
+        description: "Testing framework to use"
+        required: false
+      parallel:
+        type: "boolean"
+        description: "Run tests in parallel"
+        required: false
+        default: true
+    personas: ["qa", "security", "performance"]
+
+  - name: deploy_application
+    description: "Deploy applications with intelligent strategies and persona-driven approaches"
+    category: "build"
+    parameters:
+      environment:
+        type: "string"
+        description: "Target deployment environment"
+        required: true
+        enum: ["development", "staging", "production"]
+      strategy:
+        type: "string"
+        description: "Deployment strategy"
+        required: false
+        enum: ["blue-green", "rolling", "canary", "recreate"]
+        default: "rolling"
+      platform:
+        type: "string"
+        description: "Target platform"
+        required: false
+        enum: ["aws", "gcp", "azure", "docker", "kubernetes"]
+      persona:
+        type: "string"
+        description: "Deployment persona for approach"
+        required: false
+        enum: ["architect", "backend", "security"]
+      dryRun:
+        type: "boolean"
+        description: "Perform dry run without actual deployment"
+        required: false
+        default: false
+      rollback:
+        type: "boolean"
+        description: "Rollback to previous version"
+        required: false
+        default: false
+    personas: ["architect", "backend", "security"]

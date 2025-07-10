@@ -1,10 +1,10 @@
 #!/usr/bin/env bash
 
-# SuperClaude Installer Script
-# Installs SuperClaude configuration framework to enhance Claude Code
-# Version: 2.0.0
+# SuperAugment MCP Server Installer Script
+# Installs SuperAugment MCP server for VS Code Augment integration
+# Version: 1.0.0
 # License: MIT
-# Repository: https://github.com/NomenAK/SuperClaude
+# Repository: https://github.com/oktetopython/SuperAugment
 
 set -e  # Exit on error
 set -o pipefail  # Exit on pipe failure

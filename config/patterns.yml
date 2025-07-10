@@ -1,0 +1,158 @@
+development:
+  best_practices:
+    - "Use meaningful variable and function names"
+    - "Write self-documenting code"
+    - "Follow SOLID principles"
+    - "Implement proper error handling"
+    - "Write comprehensive tests"
+    - "Use version control effectively"
+    - "Document APIs and complex logic"
+    - "Optimize for readability first, performance second"
+
+  code_quality:
+    metrics:
+      - "Cyclomatic complexity"
+      - "Code coverage"
+      - "Technical debt ratio"
+      - "Maintainability index"
+    standards:
+      - "Consistent code formatting"
+      - "Proper naming conventions"
+      - "Appropriate abstraction levels"
+      - "Minimal code duplication"
+
+architecture:
+  patterns:
+    microservices:
+      description: "Decompose application into small, independent services"
+      benefits:
+        - "Independent deployment"
+        - "Technology diversity"
+        - "Fault isolation"
+        - "Scalability"
+      considerations:
+        - "Network latency"
+        - "Data consistency"
+        - "Service discovery"
+        - "Monitoring complexity"
+
+    event_driven:
+      description: "Use events to trigger and communicate between services"
+      benefits:
+        - "Loose coupling"
+        - "Scalability"
+        - "Resilience"
+        - "Real-time processing"
+      considerations:
+        - "Event ordering"
+        - "Eventual consistency"
+        - "Error handling"
+        - "Event versioning"
+
+    layered:
+      description: "Organize code into horizontal layers"
+      layers:
+        - "Presentation layer"
+        - "Business logic layer"
+        - "Data access layer"
+        - "Database layer"
+      benefits:
+        - "Separation of concerns"
+        - "Testability"
+        - "Maintainability"
+
+security:
+  owasp_top_10:
+    - "Injection"
+    - "Broken Authentication"
+    - "Sensitive Data Exposure"
+    - "XML External Entities (XXE)"
+    - "Broken Access Control"
+    - "Security Misconfiguration"
+    - "Cross-Site Scripting (XSS)"
+    - "Insecure Deserialization"
+    - "Using Components with Known Vulnerabilities"
+    - "Insufficient Logging & Monitoring"
+
+  best_practices:
+    authentication:
+      - "Use strong password policies"
+      - "Implement multi-factor authentication"
+      - "Use secure session management"
+      - "Implement account lockout mechanisms"
+
+    authorization:
+      - "Implement principle of least privilege"
+      - "Use role-based access control"
+      - "Validate permissions on every request"
+      - "Implement proper session management"
+
+    data_protection:
+      - "Encrypt sensitive data at rest"
+      - "Use HTTPS for data in transit"
+      - "Implement proper key management"
+      - "Sanitize user inputs"
+
+testing:
+  strategies:
+    unit_testing:
+      description: "Test individual components in isolation"
+      best_practices:
+        - "Test one thing at a time"
+        - "Use descriptive test names"
+        - "Follow AAA pattern (Arrange, Act, Assert)"
+        - "Mock external dependencies"
+
+    integration_testing:
+      description: "Test interaction between components"
+      best_practices:
+        - "Test critical integration points"
+        - "Use realistic test data"
+        - "Test error scenarios"
+        - "Verify data flow"
+
+    e2e_testing:
+      description: "Test complete user workflows"
+      best_practices:
+        - "Focus on critical user journeys"
+        - "Use stable selectors"
+        - "Implement proper wait strategies"
+        - "Test across different browsers"
+
+  coverage_targets:
+    unit_tests: "80-90%"
+    integration_tests: "60-70%"
+    e2e_tests: "Critical paths only"
+
+performance:
+  optimization_techniques:
+    frontend:
+      - "Code splitting"
+      - "Lazy loading"
+      - "Image optimization"
+      - "Caching strategies"
+      - "Minification and compression"
+      - "CDN usage"
+
+    backend:
+      - "Database query optimization"
+      - "Caching (Redis, Memcached)"
+      - "Connection pooling"
+      - "Asynchronous processing"
+      - "Load balancing"
+      - "Horizontal scaling"
+
+  monitoring:
+    metrics:
+      - "Response time"
+      - "Throughput"
+      - "Error rate"
+      - "CPU usage"
+      - "Memory usage"
+      - "Database performance"
+
+    tools:
+      - "Application Performance Monitoring (APM)"
+      - "Log aggregation"
+      - "Real User Monitoring (RUM)"
+      - "Synthetic monitoring"
