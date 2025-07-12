@@ -2,7 +2,7 @@
 
 # SuperClaude Installer Script
 # Installs SuperClaude configuration framework to enhance Claude Code
-# Version: 2.0.0
+# Version: 2.0.1
 # License: MIT
 # Repository: https://github.com/NomenAK/SuperClaude
 
@@ -20,7 +20,7 @@ check_bash_version() {
 }
 
 # Script version
-readonly SCRIPT_VERSION="2.0.0"
+readonly SCRIPT_VERSION="2.0.1"
 
 # Constants
 readonly REQUIRED_SPACE_KB=51200  # 50MB in KB
