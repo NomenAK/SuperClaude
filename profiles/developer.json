@@ -5,7 +5,7 @@
     "core",
     "commands",
     "mcp",
-    "morphllm"
+    "hooks"
   ],
   "features": {
     "auto_update": false,

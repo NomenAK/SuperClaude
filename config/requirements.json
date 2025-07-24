@@ -4,20 +4,20 @@
   },
   "node": {
     "min_version": "16.0.0",
-    "required_for": ["mcp", "morphllm"]
+    "required_for": ["mcp", "filesystem-with-morph"]
   },
   "disk_space_mb": 500,
   "external_tools": {
     "claude_cli": {
       "command": "claude --version",
       "min_version": "0.1.0",
-      "required_for": ["mcp", "morphllm"],
+      "required_for": ["mcp", "filesystem-with-morph"],
       "optional": false
     },
     "morph_mcp_server": {
       "command": "npm list -g @morph-llm/morph-fast-apply",
       "min_version": "1.0.0",
-      "required_for": ["morphllm"],
+      "required_for": ["filesystem-with-morph"],
       "optional": false,
       "description": "MorphLLM MCP server for fast filesystem operations"
     },
@@ -26,6 +26,23 @@
       "min_version": "2.0.0",
       "required_for": ["development"],
       "optional": true
+    },
+    "python3": {
+      "command": "python3 --version",
+      "min_version": "3.8.0",
+      "required_for": ["hooks", "filesystem-with-morph"],
+      "optional": false,
+      "description": "Python 3.8+ required for hook execution"
+    }
+  },
+  "api_keys": {
+    "morph_api_key": {
+      "env_var": "MORPH_API_KEY",
+      "description": "MorphLLM API key for blazing-fast filesystem operations",
+      "required_for": ["filesystem-with-morph"],
+      "optional": false,
+      "obtain_url": "https://morphllm.com/dashboard",
+      "validation_command": "echo $MORPH_API_KEY | grep -q '^[a-zA-Z0-9_-]\\+$'"
     }
   },
   "installation_commands": {
@@ -61,6 +78,11 @@
       "all": "npm install -g @morph-llm/morph-fast-apply",
       "description": "Install MorphLLM MCP server for fast filesystem operations",
       "post_install": "Configure MorphLLM API key and server settings in Claude Code MCP configuration"
+    },
+    "morph_api_key_setup": {
+      "all": "Visit https://morphllm.com/dashboard to obtain API key, then set MORPH_API_KEY environment variable",
+      "description": "Setup MorphLLM API key for authentication",
+      "example": "export MORPH_API_KEY=your_api_key_here"
     }
   }
 }

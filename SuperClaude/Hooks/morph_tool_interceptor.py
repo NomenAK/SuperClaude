@@ -27,12 +27,17 @@ logger = logging.getLogger(__name__)
 
 # Tool mapping from native Claude Code tools to MorphLLM equivalents
 TOOL_MAPPING = {
-    "Read": "mcp__morph__read_file",
-    "Write": "mcp__morph__write_file",
-    "Edit": "mcp__morph__edit_file",
-    "LS": "mcp__morph__list_directory",
-    "Glob": "mcp__morph__search_files",
-    "MultiEdit": "mcp__morph__edit_file"  # Special handling for batch operations
+    "Read": "mcp__filesystem-with-morph__read_file",
+    "Write": "mcp__filesystem-with-morph__write_file", 
+    "Edit": "mcp__filesystem-with-morph__edit_file",
+    "LS": "mcp__filesystem-with-morph__list_directory",
+    "Glob": "mcp__filesystem-with-morph__search_files",
+    "MultiEdit": "mcp__filesystem-with-morph__edit_file"  # Special handling for batch operations
+}
+
+# MorphLLM tools that may need special token overflow handling
+MORPH_TOOLS_WITH_FALLBACK = {
+    "mcp__filesystem-with-morph__directory_tree": "safe_directory_tree"
 }
 
 # Performance thresholds for auto-activation
@@ -141,17 +146,32 @@ class MorphToolInterceptor:
     def validate_morph_server(self) -> bool:
         """Validate that MorphLLM MCP server is available"""
         
-        # Check if MorphLLM MCP server is configured
-        # This is a simplified check - in practice, you'd check the MCP server status
-        morph_env_vars = ["MORPH_API_KEY", "MORPH_SERVER_URL"]
+        # Check if MorphLLM API key is configured
+        morph_api_key = os.getenv("MORPH_API_KEY")
+        if not morph_api_key:
+            logger.warning("MorphLLM server validation failed: MORPH_API_KEY not set")
+            return False
         
-        for env_var in morph_env_vars:
-            if not os.getenv(env_var):
-                logger.warning(f"MorphLLM server validation failed: {env_var} not set")
+        # Check if filesystem-with-morph MCP server is available via claude mcp list
+        try:
+            import subprocess
+            result = subprocess.run(
+                ["claude", "mcp", "list"],
+                capture_output=True,
+                text=True,
+                timeout=10
+            )
+            
+            if result.returncode == 0 and "filesystem-with-morph" in result.stdout.lower():
+                logger.debug("MorphLLM server validation passed")
+                return True
+            else:
+                logger.warning("MorphLLM server validation failed: filesystem-with-morph not found in MCP servers")
                 return False
-        
-        logger.debug("MorphLLM server validation passed")
-        return True
+                
+        except Exception as e:
+            logger.warning(f"MorphLLM server validation failed: {e}")
+            return False
     
     def map_tool_parameters(self, tool_name: str, tool_input: Dict[str, Any]) -> Dict[str, Any]:
         """Map native tool parameters to MorphLLM equivalents"""
@@ -204,7 +224,13 @@ class MorphToolInterceptor:
             "tool_name": tool_name,
             "action": action,
             "reason": reason,
-            "session_stats": self.session_stats
+            "session_stats": {
+                "total_operations": self.session_stats["total_operations"],
+                "morph_operations": self.session_stats["morph_operations"],
+                "native_operations": self.session_stats["native_operations"],
+                "fallback_operations": self.session_stats["fallback_operations"],
+                "start_time": self.session_stats["start_time"].isoformat()
+            }
         }
         
         logger.info(f"Tool interception: {action} {tool_name} - {reason}")
@@ -225,7 +251,31 @@ class MorphToolInterceptor:
         # Parse command line arguments to get flags
         flags = self.parse_flags()
         
-        # Determine if we should intercept this tool call
+        # Check if this is a direct MorphLLM tool call that needs safe handling
+        if self.should_use_safe_directory_tree(tool_name, tool_input):
+            path = tool_input.get("path", "")
+            self.log_interception(tool_name, "safe_intercept", f"Using chunked directory discovery for {path} to prevent token overflow")
+            self.session_stats["morph_operations"] += 1
+            
+            # Create chunked directory sequence
+            chunked_call = self.create_chunked_directory_sequence(tool_input)
+            
+            return {
+                "action": "block",
+                "exit_code": 2,
+                "reason": f"Directory tree for {path} likely to exceed token limit. Using chunked discovery instead.",
+                "alternative_tool": chunked_call['tool'],
+                "alternative_input": chunked_call['input'],
+                "morph_metadata": {
+                    "original_tool": tool_name,
+                    "safety_mode": True,
+                    "token_overflow_prevention": True,
+                    "chunked_strategy": chunked_call.get('chunked_strategy', {}),
+                    "recommended_approach": "Use list_directory + selective directory_tree calls"
+                }
+            }
+        
+        # Determine if we should intercept this tool call (original logic)
         if self.should_intercept(tool_name, tool_input, flags):
             
             # Validate MorphLLM server availability
@@ -268,6 +318,84 @@ class MorphToolInterceptor:
             "performance_note": "Performance may be reduced due to MorphLLM unavailability"
         }
     
+    def detect_token_overflow_risk(self, tool_name: str, tool_input: Dict[str, Any]) -> bool:
+        """Detect if a tool call is likely to cause token overflow"""
+        
+        if tool_name == "mcp__filesystem-with-morph__directory_tree":
+            path = tool_input.get("path", "")
+            
+            # Check if path exists and estimate size heuristically
+            try:
+                if os.path.exists(path) and os.path.isdir(path):
+                    items = os.listdir(path)
+                    
+                    # Count subdirectories
+                    subdirs = sum(1 for item in items 
+                                if os.path.isdir(os.path.join(path, item)))
+                    
+                    # Check for known problematic subdirectories
+                    problematic_subdirs = [
+                        ".git", "node_modules", "logs", "__pycache__", 
+                        ".cache", "build", "dist", ".venv", "venv"
+                    ]
+                    
+                    has_problematic = any(subdir in items for subdir in problematic_subdirs)
+                    
+                    # More conservative thresholds
+                    if subdirs >= 8:  # 8+ subdirectories (SuperClaude has 9)
+                        logger.debug(f"Token overflow risk detected: {subdirs} subdirectories")
+                        return True
+                        
+                    if has_problematic:
+                        logger.debug(f"Token overflow risk detected: contains problematic subdirectories")
+                        return True
+                        
+                    # Check total item count (files + directories)
+                    total_items = len(items)
+                    if total_items >= 15:  # Many files/dirs likely to be large
+                        logger.debug(f"Token overflow risk detected: {total_items} total items")
+                        return True
+                        
+            except (OSError, PermissionError):
+                # If we can't read the directory, play it safe
+                logger.debug("Token overflow risk detected: permission error, playing safe")
+                return True
+                
+        return False
+    
+    def create_chunked_directory_sequence(self, tool_input: Dict[str, Any]) -> Dict[str, Any]:
+        """Create a sequence of MorphLLM calls for safe directory discovery"""
+        
+        path = tool_input.get("path", "")
+        
+        # First, try list_directory to get the root structure safely
+        return {
+            "tool": "mcp__filesystem-with-morph__list_directory",
+            "input": {"path": path},
+            "chunked_strategy": {
+                "step": 1,
+                "description": "Getting root directory listing safely",
+                "next_steps": [
+                    "For each subdirectory, try mcp__filesystem-with-morph__directory_tree individually",
+                    "If any subdirectory fails, keep it as a basic directory entry",
+                    "Exclude known problematic directories (.git, node_modules, logs)"
+                ],
+                "fallback_note": "This approach prevents token overflow by processing directories in chunks"
+            }
+        }
+    
+    def should_use_safe_directory_tree(self, tool_name: str, tool_input: Dict[str, Any]) -> bool:
+        """Determine if we should use safe directory tree instead of regular directory_tree"""
+        
+        if tool_name not in MORPH_TOOLS_WITH_FALLBACK:
+            return False
+            
+        # Always use safe version for directory_tree to prevent token overflow
+        if tool_name == "mcp__filesystem-with-morph__directory_tree":
+            return self.detect_token_overflow_risk(tool_name, tool_input)
+            
+        return False
+
     def parse_flags(self) -> List[str]:
         """Parse command line flags from environment or arguments"""
         

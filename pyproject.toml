@@ -5,16 +5,52 @@ build-backend = "hatchling.build"
 [project]
 name = "SuperClaude"
 dynamic = ["version"]
-description = "SuperClaude Framework Management Hub"
+description = "Claude Code framework with specialized commands, personas, MCP integration, and blazing-fast filesystem operations"
 readme = "README.md"
 license = {text = "MIT"}
 authors = [
     {name = "Mithun Gowda B", email = "contact@superclaude.dev"},
     {name = "NomenAK", email = "contact@superclaude.dev"},
 ]
+maintainers = [
+    {name = "Mithun Gowda B", email = "contact@superclaude.dev"},
+    {name = "NomenAK", email = "contact@superclaude.dev"},
+]
 requires-python = ">=3.8"
 dependencies = [
     "setuptools>=45.0.0",
+]
+keywords = [
+    "claude", 
+    "ai", 
+    "development", 
+    "automation", 
+    "mcp", 
+    "filesystem", 
+    "claude-code",
+    "personas",
+    "commands",
+    "framework",
+    "morphllm",
+    "productivity"
+]
+
+[project.optional-dependencies]
+# MCP server integration (requires Node.js 16+ and Claude CLI)
+mcp = []
+
+# MorphLLM fast filesystem operations (requires API key)
+morphllm = []
+
+# Full installation with all optional components
+full = ["SuperClaude[mcp,morphllm]"]
+
+# Development dependencies
+dev = [
+    "pytest>=6.0.0",
+    "black>=22.0.0",
+    "isort>=5.0.0",
+    "flake8>=4.0.0",
 ]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -39,6 +75,7 @@ Repository = "https://github.com/NomenAK/SuperClaude"
 
 [project.scripts]
 SuperClaude = "SuperClaude.__main__:main"
+superclaude = "SuperClaude.__main__:main"
 
 [tool.hatch.version]
 path = "VERSION"

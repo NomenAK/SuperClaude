@@ -22,13 +22,11 @@ class HooksComponent(Component):
         self.file_manager = FileManager()
         self.settings_manager = SettingsManager(self.install_dir)
         
-        # Define hook files to install (when hooks are ready)
+        # Define hook files to install
         self.hook_files = [
-            "pre_tool_use.py",
-            "post_tool_use.py",
-            "error_handler.py",
-            "context_accumulator.py",
-            "performance_monitor.py"
+            "morph_tool_interceptor.py",    # PreToolUse hook for MorphLLM routing
+            "morph_performance_monitor.py", # PostToolUse hook for performance tracking
+            "morph_error_handler.py"        # Error handling hook for MorphLLM fallbacks
         ]
     
     def get_metadata(self) -> Dict[str, str]:
@@ -36,7 +34,7 @@ class HooksComponent(Component):
         return {
             "name": "hooks",
             "version": "3.0.0",
-            "description": "Claude Code hooks integration (future-ready)",
+            "description": "Claude Code hooks integration with MorphLLM tool interception and performance monitoring",
             "category": "integration"
         }
     
@@ -80,34 +78,66 @@ class HooksComponent(Component):
         return files
     
     def get_settings_modifications(self) -> Dict[str, Any]:
-        """Get settings modifications"""
+        """Get settings modifications for Claude Code hooks configuration"""
         hooks_dir = self.install_dir / "hooks"
         
-        # Build hooks configuration based on available files
-        hook_config = {}
+        # Check which hook files exist
+        existing_hooks = {}
         for filename in self.hook_files:
             hook_path = hooks_dir / filename
             if hook_path.exists():
-                hook_name = filename.replace('.py', '')
-                hook_config[hook_name] = [str(hook_path)]
+                existing_hooks[filename] = str(hook_path)
         
-        settings_mods = {
+        settings_mods = {}
+        
+        # Add metadata tracking (separate from Claude Code settings)
+        metadata_mods = {
             "components": {
                 "hooks": {
                     "version": "3.0.0",
                     "installed": True,
-                    "files_count": len(hook_config)
+                    "files_count": len(existing_hooks)
                 }
             }
         }
         
-        # Only add hooks configuration if we have actual hook files
-        if hook_config:
-            settings_mods["hooks"] = {
-                "enabled": True,
-                **hook_config
+        # Add Claude Code hooks configuration if we have hook files
+        if existing_hooks:
+            hooks_config = {
+                "hooks": {}
             }
+            
+            # Configure PreToolUse hooks (correct nested format)
+            if "morph_tool_interceptor.py" in existing_hooks:
+                hooks_config["hooks"]["PreToolUse"] = [
+                    {
+                        "matcher": "^(Read|Write|Edit|MultiEdit|LS|Glob)$",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"python3 {existing_hooks['morph_tool_interceptor.py']}"
+                            }
+                        ]
+                    }
+                ]
+            
+            # Configure PostToolUse hooks (correct nested format)
+            if "morph_performance_monitor.py" in existing_hooks:
+                hooks_config["hooks"]["PostToolUse"] = [
+                    {
+                        "matcher": ".*",
+                        "hooks": [
+                            {
+                                "type": "command",
+                                "command": f"python3 {existing_hooks['morph_performance_monitor.py']}"
+                            }
+                        ]
+                    }
+                ]
+            
+            settings_mods.update(hooks_config)
         
+        # Return settings modifications (Claude Code settings.json format)
         return settings_mods
     
     def install(self, config: Dict[str, Any]) -> bool:
@@ -115,30 +145,32 @@ class HooksComponent(Component):
         try:
             self.logger.info("Installing SuperClaude hooks component...")
             
-            # This component is future-ready - hooks aren't implemented yet
             source_dir = self._get_source_dir()
+            
+            # Validate installation prerequisites
+            success, errors = self.validate_prerequisites()
+            if not success:
+                for error in errors:
+                    self.logger.error(error)
+                return False
+            
+            # Ensure hooks directory exists
+            hooks_dir = self.install_dir / "hooks"
+            if not self.file_manager.ensure_directory(hooks_dir):
+                self.logger.error(f"Could not create hooks directory: {hooks_dir}")
+                return False
+            
+            # Check if hook source files exist
             if not source_dir.exists():
-                self.logger.info("Hooks are not yet implemented - installing placeholder component")
+                self.logger.warning(f"Hook source directory not found: {source_dir}")
+                self.logger.info("Installing placeholder hooks component")
                 
-                # Create placeholder hooks directory
-                hooks_dir = self.install_dir / "hooks"
-                if not self.file_manager.ensure_directory(hooks_dir):
-                    self.logger.error(f"Could not create hooks directory: {hooks_dir}")
-                    return False
-                
-                # Create placeholder file
+                # Create placeholder file for future implementation
                 placeholder_content = '''"""
 SuperClaude Hooks - Future Implementation
 
 This directory is reserved for Claude Code hooks integration.
 Hooks will provide lifecycle management and automation capabilities.
-
-Planned hooks:
-- pre_tool_use: Execute before tool usage
-- post_tool_use: Execute after tool completion
-- error_handler: Handle tool errors and recovery
-- context_accumulator: Manage context across operations
-- performance_monitor: Track and optimize performance
 
 For more information, see SuperClaude documentation.
 """
@@ -148,7 +180,6 @@ def placeholder_hook():
     """Placeholder hook function"""
     pass
 '''
-                
                 placeholder_path = hooks_dir / "PLACEHOLDER.py"
                 try:
                     with open(placeholder_path, 'w') as f:
@@ -157,46 +188,33 @@ def placeholder_hook():
                 except Exception as e:
                     self.logger.warning(f"Could not create placeholder file: {e}")
                 
-                # Update settings with placeholder registration
+                # Register placeholder in metadata only (not in Claude Code settings)
                 try:
-                    settings_mods = {
-                        "components": {
-                            "hooks": {
-                                "version": "3.0.0",
-                                "installed": True,
-                                "status": "placeholder",
-                                "files_count": 0
-                            }
-                        }
-                    }
-                    self.settings_manager.update_settings(settings_mods)
-                    self.logger.info("Updated settings.json with hooks component registration")
+                    self.settings_manager.add_component_registration("hooks", {
+                        "version": "3.0.0",
+                        "category": "integration",
+                        "status": "placeholder",
+                        "files_count": 0
+                    })
+                    self.logger.info("Registered hooks component in metadata")
                 except Exception as e:
-                    self.logger.error(f"Failed to update settings.json: {e}")
+                    self.logger.error(f"Failed to register component: {e}")
                     return False
                 
                 self.logger.success("Hooks component installed successfully (placeholder)")
                 return True
             
-            # If hooks source directory exists, install actual hooks
-            self.logger.info("Installing actual hook files...")
-            
-            # Validate installation
-            success, errors = self.validate_prerequisites()
-            if not success:
-                for error in errors:
-                    self.logger.error(error)
-                return False
+            # Install actual hook files
+            self.logger.info("Installing MorphLLM hook files...")
             
             # Get files to install
             files_to_install = self.get_files_to_install()
             
             if not files_to_install:
                 self.logger.warning("No hook files found to install")
-                return False
+                return self._install_placeholder_hooks()
             
             # Validate all files for security
-            hooks_dir = self.install_dir / "hooks"
             is_safe, security_errors = SecurityValidator.validate_component_files(
                 files_to_install, source_dir, hooks_dir
             )
@@ -205,31 +223,46 @@ def placeholder_hook():
                     self.logger.error(f"Security validation failed: {error}")
                 return False
             
-            # Ensure hooks directory exists
-            if not self.file_manager.ensure_directory(hooks_dir):
-                self.logger.error(f"Could not create hooks directory: {hooks_dir}")
-                return False
-            
             # Copy hook files
             success_count = 0
             for source, target in files_to_install:
-                self.logger.debug(f"Copying {source.name} to {target}")
+                self.logger.debug(f"Installing hook: {source.name} -> {target}")
                 
                 if self.file_manager.copy_file(source, target):
                     success_count += 1
-                    self.logger.debug(f"Successfully copied {source.name}")
+                    # Make hook files executable
+                    try:
+                        target.chmod(0o755)
+                        self.logger.debug(f"Made {source.name} executable")
+                    except Exception as e:
+                        self.logger.warning(f"Could not make {source.name} executable: {e}")
                 else:
-                    self.logger.error(f"Failed to copy {source.name}")
+                    self.logger.error(f"Failed to install hook: {source.name}")
             
             if success_count != len(files_to_install):
-                self.logger.error(f"Only {success_count}/{len(files_to_install)} hook files copied successfully")
+                self.logger.error(f"Only {success_count}/{len(files_to_install)} hook files installed successfully")
                 return False
             
-            # Update settings.json
+            # Register component in metadata
+            try:
+                self.settings_manager.add_component_registration("hooks", {
+                    "version": "3.0.0",
+                    "category": "integration",
+                    "status": "active",
+                    "files_count": success_count
+                })
+                self.logger.info("Registered hooks component in metadata")
+            except Exception as e:
+                self.logger.error(f"Failed to register component: {e}")
+                return False
+            
+            # Update Claude Code settings.json with hooks configuration
             try:
                 settings_mods = self.get_settings_modifications()
-                self.settings_manager.update_settings(settings_mods)
-                self.logger.info("Updated settings.json with hooks configuration")
+                if settings_mods:
+                    self.settings_manager.update_settings(settings_mods)
+                    self.logger.info("Updated Claude Code settings.json with hooks configuration")
+                    self.logger.info("MorphLLM hooks are now active for filesystem operations")
             except Exception as e:
                 self.logger.error(f"Failed to update settings.json: {e}")
                 return False
@@ -239,6 +272,38 @@ def placeholder_hook():
             
         except Exception as e:
             self.logger.exception(f"Unexpected error during hooks installation: {e}")
+            return False
+    
+    def _install_placeholder_hooks(self) -> bool:
+        """Install placeholder hooks when actual hooks are not available"""
+        try:
+            hooks_dir = self.install_dir / "hooks"
+            
+            # Create placeholder file
+            placeholder_content = '''"""
+SuperClaude Hooks - Future Implementation
+"""
+
+def placeholder_hook():
+    pass
+'''
+            placeholder_path = hooks_dir / "PLACEHOLDER.py"
+            with open(placeholder_path, 'w') as f:
+                f.write(placeholder_content)
+            
+            # Register placeholder component
+            self.settings_manager.add_component_registration("hooks", {
+                "version": "3.0.0",
+                "category": "integration", 
+                "status": "placeholder",
+                "files_count": 0
+            })
+            
+            self.logger.success("Hooks component installed successfully (placeholder)")
+            return True
+            
+        except Exception as e:
+            self.logger.error(f"Failed to install placeholder hooks: {e}")
             return False
     
     def uninstall(self) -> bool:

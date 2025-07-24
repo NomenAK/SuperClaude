@@ -27,35 +27,63 @@
       "enabled": true,
       "required_tools": ["node", "claude_cli"]
     },
-    "morphllm": {
-      "name": "morphllm",
+    "filesystem-with-morph": {
+      "name": "filesystem-with-morph",
       "version": "3.0.0",
-      "description": "MorphLLM fast filesystem operations integration with Claude Code hooks",
+      "description": "MorphLLM fast filesystem operations with 20-60% performance improvement",
       "category": "integration",
-      "dependencies": ["core", "hooks"],
+      "dependencies": ["core", "hooks", "mcp"],
       "enabled": true,
-      "required_tools": ["claude_cli", "morph_api_key"],
+      "required_tools": ["claude_cli", "node", "npm"],
+      "api_requirements": {
+        "morph_api_key": {
+          "env_var": "MORPH_API_KEY",
+          "description": "MorphLLM API key for blazing-fast filesystem operations",
+          "required": true,
+          "obtain_url": "https://morphllm.com/dashboard"
+        }
+      },
       "configuration": {
         "auto_activation": true,
         "performance_monitoring": true,
         "fallback_enabled": true,
         "circuit_breaker_enabled": true,
-        "default_flags": ["--morph-fast"],
+        "mcp_server": {
+          "name": "filesystem-with-morph",
+          "package": "@morph-llm/morph-fast-apply",
+          "command": "npx -y @morph-llm/morph-fast-apply@latest /home/anton/",
+          "env_vars": {
+            "ALL_TOOLS": "true"
+          }
+        },
         "hook_files": [
           "morph_tool_interceptor.py",
           "morph_performance_monitor.py", 
           "morph_error_handler.py"
-        ]
+        ],
+        "tool_mappings": {
+          "Read": "mcp__filesystem-with-morph__read_file",
+          "Write": "mcp__filesystem-with-morph__write_file", 
+          "Edit": "mcp__filesystem-with-morph__edit_file",
+          "MultiEdit": "mcp__filesystem-with-morph__edit_file",
+          "LS": "mcp__filesystem-with-morph__list_directory",
+          "Glob": "mcp__filesystem-with-morph__search_files"
+        }
       }
     },
     "hooks": {
       "name": "hooks",
       "version": "3.0.0",
-      "description": "Claude Code hooks integration (future-ready)",
+      "description": "Claude Code hooks integration with MorphLLM tool interception and performance monitoring",
       "category": "integration", 
       "dependencies": ["core"],
       "enabled": true,
-      "required_tools": []
+      "required_tools": ["python3"],
+      "hook_types": [
+        "preToolUse",
+        "postToolUse", 
+        "errorHandler"
+      ]
     }
   }
 }

@@ -94,23 +94,43 @@ This is because v3 has a different structure and the old files can cause conflic
 
 ## Installation 📦
 
-### Quick Start
+### 🚀 Quick Install (Recommended)
 ```bash
 pip install SuperClaude
-#Install with python-pip
+SuperClaude install --quick
 ```
-### Install via Git
+This installs the core framework and essential commands. Perfect for most users!
+
+### 📋 Manual Install
 ```bash
-# Clone the repo
+# Clone the repository
 git clone https://github.com/NomenAK/SuperClaude.git
 cd SuperClaude
 
-# Install with our unified CLI
-pip install .
-
-# That's it! 🎉
+# Run the simple installer
+python install.py --quick
 ```
+Great for users who want to clone and customize.
 
+### 🛠️ Full Install (Developers)
+```bash
+# Via pip (recommended)
+pip install SuperClaude[full]
+SuperClaude install --profile developer
+
+# OR via manual install
+git clone https://github.com/NomenAK/SuperClaude.git
+cd SuperClaude
+python install.py --full
+```
+Includes MCP servers (Context7, Sequential, Magic, Playwright) and MorphLLM integration.
+
+### 📦 Installation Options Summary
+| Method | Command | Includes | Best For |
+|--------|---------|----------|----------|
+| **Quick** | `pip install SuperClaude && SuperClaude install --quick` | Core + Commands | Most users |
+| **Manual** | `python install.py --quick` | Core + Commands | Customization |
+| **Full** | `pip install SuperClaude[full]` | Everything | Developers |
 
 **Missing Python?**
 ```bash
@@ -124,22 +144,11 @@ brew install python3
 # Download from https://python.org/downloads/
 ```
 
-### Other Installation Options
-```bash
-# Minimal install (just core framework)
-python3 SuperClaude install --minimal
-
-# Developer setup (everything)  
-python3 SuperClaude install --profile developer
-
-# Interactive selection
-python3 SuperClaude install
-
-# See what's available
-python3 SuperClaude install --list-components
-```
-
-The installer handles everything: framework files, MCP servers, and Claude Code configuration.
+**All installation methods handle:**
+- Framework files and documentation
+- Claude Code configuration
+- MCP server setup (full install only)
+- Automatic prerequisite checking
 
 ### MorphLLM Setup (Optional but Recommended) 🚀
 

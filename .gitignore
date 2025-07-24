@@ -57,3 +57,6 @@ wheels/
 .Trashes
 ehthumbs.db
 Desktop.ini
+
+# OpenCode
+.opencode/

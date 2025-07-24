@@ -1,0 +1,82 @@
+# SuperClaude Framework - Requirements
+# This file documents dependencies and optional components for clarity
+
+# ============================================================================
+# CORE REQUIREMENTS (automatically installed with the package)
+# ============================================================================
+setuptools>=45.0.0
+
+# ============================================================================
+# OPTIONAL SYSTEM DEPENDENCIES (install manually via system package manager)
+# ============================================================================
+
+# For MCP server integration:
+# - Node.js 16+ (install via: sudo apt install nodejs npm  OR  brew install node)
+# - Claude CLI (install via: visit https://claude.ai/code)
+
+# For MorphLLM integration:
+# - MORPH_API_KEY environment variable (get from: https://morphllm.com/dashboard)
+
+# ============================================================================
+# PYTHON OPTIONAL DEPENDENCIES (install via pip)
+# ============================================================================
+
+# Full installation with all features:
+# pip install SuperClaude[full]
+
+# MCP server support:
+# pip install SuperClaude[mcp]
+
+# MorphLLM integration:
+# pip install SuperClaude[morphllm]
+
+# Development tools:
+# pip install SuperClaude[dev]
+
+# ============================================================================
+# DEVELOPMENT REQUIREMENTS (for contributors)
+# ============================================================================
+
+# Uncomment these if you're developing SuperClaude:
+# pytest>=6.0.0
+# black>=22.0.0
+# isort>=5.0.0
+# flake8>=4.0.0
+
+# ============================================================================
+# INSTALLATION COMMANDS
+# ============================================================================
+
+# Quick install (recommended):
+# pip install SuperClaude
+# SuperClaude install --quick
+
+# OR manual install:
+# git clone https://github.com/NomenAK/SuperClaude.git
+# cd SuperClaude  
+# python install.py --quick
+
+# Full install with all features:
+# pip install SuperClaude[full]
+# SuperClaude install --profile developer
+
+# ============================================================================
+# SYSTEM REQUIREMENTS
+# ============================================================================
+
+# - Python 3.8 or higher
+# - 500MB free disk space
+# - Internet connection for MCP server downloads
+# - Node.js 16+ (for MCP servers)
+# - Claude CLI (for MCP server management)
+
+# ============================================================================
+# TROUBLESHOOTING
+# ============================================================================
+
+# If installation fails:
+# 1. Ensure Python 3.8+ is installed: python --version
+# 2. Upgrade pip: pip install --upgrade pip
+# 3. For MCP issues: ensure Node.js and Claude CLI are installed
+# 4. For permission issues: try installing in a virtual environment
+# 5. Report issues at: https://github.com/NomenAK/SuperClaude/issues

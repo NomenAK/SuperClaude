@@ -5,7 +5,7 @@ Handles settings.json manipulation with deep merge and backup
 
 import json
 import shutil
-from typing import Dict, Any, Optional, List
+from typing import Dict, Any, Optional, List, Tuple
 from pathlib import Path
 from datetime import datetime
 import copy
@@ -353,6 +353,170 @@ class SettingsManager:
             return value
         except (KeyError, TypeError):
             return default
+    
+    def configure_hooks(self, hooks_config: Dict[str, Any]) -> None:
+        """
+        Configure Claude Code hooks in settings.json
+        
+        Args:
+            hooks_config: Hooks configuration dict with preToolUse, postToolUse, etc.
+        """
+        if not hooks_config:
+            return
+        
+        # Validate hooks configuration format
+        if not self._validate_hooks_config(hooks_config):
+            raise ValueError("Invalid hooks configuration format")
+        
+        # Update settings with hooks configuration
+        settings_mods = {"hooks": hooks_config}
+        self.update_settings(settings_mods)
+    
+    def add_hook(self, hook_type: str, matcher: str, command: str) -> None:
+        """
+        Add a single hook to Claude Code settings
+        
+        Args:
+            hook_type: Type of hook (preToolUse, postToolUse, errorHandler, etc.)
+            matcher: Regex pattern to match tools
+            command: Command to execute for the hook
+        """
+        settings = self.load_settings()
+        
+        if "hooks" not in settings:
+            settings["hooks"] = {}
+        
+        if hook_type not in settings["hooks"]:
+            settings["hooks"][hook_type] = []
+        
+        # Add the hook configuration
+        hook_config = {
+            "matcher": matcher,
+            "command": command
+        }
+        
+        settings["hooks"][hook_type].append(hook_config)
+        self.save_settings(settings)
+    
+    def remove_hooks(self, hook_type: Optional[str] = None) -> bool:
+        """
+        Remove hooks from Claude Code settings
+        
+        Args:
+            hook_type: Specific hook type to remove, or None to remove all hooks
+            
+        Returns:
+            True if hooks were removed, False if no hooks found
+        """
+        settings = self.load_settings()
+        
+        if "hooks" not in settings:
+            return False
+        
+        if hook_type:
+            if hook_type in settings["hooks"]:
+                del settings["hooks"][hook_type]
+                self.save_settings(settings)
+                return True
+            return False
+        else:
+            # Remove all hooks
+            del settings["hooks"]
+            self.save_settings(settings)
+            return True
+    
+    def get_hooks_config(self) -> Dict[str, Any]:
+        """
+        Get current hooks configuration from settings
+        
+        Returns:
+            Hooks configuration dict or empty dict if no hooks configured
+        """
+        return self.get_setting("hooks", {})
+    
+    def is_hooks_enabled(self) -> bool:
+        """
+        Check if hooks are enabled in settings
+        
+        Returns:
+            True if hooks are configured, False otherwise
+        """
+        hooks_config = self.get_hooks_config()
+        return bool(hooks_config)
+    
+    def validate_hooks_paths(self) -> Tuple[bool, List[str]]:
+        """
+        Validate that all hook command paths exist and are executable
+        
+        Returns:
+            Tuple of (is_valid, list_of_errors)
+        """
+        from pathlib import Path
+        errors = []
+        hooks_config = self.get_hooks_config()
+        
+        if not hooks_config:
+            return True, []
+        
+        for hook_type, hook_list in hooks_config.items():
+            if not isinstance(hook_list, list):
+                errors.append(f"Hook type '{hook_type}' should be a list")
+                continue
+            
+            for i, hook in enumerate(hook_list):
+                if not isinstance(hook, dict):
+                    errors.append(f"Hook {hook_type}[{i}] should be a dict")
+                    continue
+                
+                command = hook.get("command", "")
+                if not command:
+                    errors.append(f"Hook {hook_type}[{i}] missing command")
+                    continue
+                
+                # Extract script path from command (handle "python3 /path/script.py" format)
+                command_parts = command.split()
+                if len(command_parts) >= 2 and command_parts[0] in ["python3", "python", "node"]:
+                    script_path = Path(command_parts[1])
+                else:
+                    script_path = Path(command_parts[0])
+                
+                if not script_path.exists():
+                    errors.append(f"Hook script not found: {script_path}")
+                elif not script_path.is_file():
+                    errors.append(f"Hook path is not a file: {script_path}")
+        
+        return len(errors) == 0, errors
+    
+    def _validate_hooks_config(self, hooks_config: Dict[str, Any]) -> bool:
+        """
+        Validate hooks configuration format
+        
+        Args:
+            hooks_config: Hooks configuration to validate
+            
+        Returns:
+            True if valid, False otherwise
+        """
+        valid_hook_types = ["preToolUse", "postToolUse", "errorHandler", "notification", "stop", "subagentStop"]
+        
+        for hook_type, hook_list in hooks_config.items():
+            if hook_type not in valid_hook_types:
+                return False
+            
+            if not isinstance(hook_list, list):
+                return False
+            
+            for hook in hook_list:
+                if not isinstance(hook, dict):
+                    return False
+                
+                if "matcher" not in hook or "command" not in hook:
+                    return False
+                
+                if not isinstance(hook["matcher"], str) or not isinstance(hook["command"], str):
+                    return False
+        
+        return True
     
     def _deep_merge(self, base: Dict[str, Any], overlay: Dict[str, Any]) -> Dict[str, Any]:
         """

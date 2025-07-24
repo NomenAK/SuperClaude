@@ -54,6 +54,18 @@ class MCPComponent(Component):
                 "npm_package": "@modelcontextprotocol/server-playwright",
                 "command": "npx @modelcontextprotocol/server-playwright",
                 "required": False
+            },
+            "filesystem-with-morph": {
+                "name": "filesystem-with-morph",
+                "description": "MorphLLM fast filesystem operations with 20-60% performance improvement",
+                "npm_package": "@morph-llm/morph-fast-apply",
+                "command": "npx -y @morph-llm/morph-fast-apply@latest /home/anton/",
+                "required": False,
+                "api_key_env": "MORPH_API_KEY",
+                "api_key_description": "MorphLLM API key for blazing-fast filesystem operations",
+                "env_vars": {
+                    "ALL_TOOLS": "true"
+                }
             }
         }
     
@@ -62,7 +74,7 @@ class MCPComponent(Component):
         return {
             "name": "mcp",
             "version": "3.0.0",
-            "description": "MCP server integration (Context7, Sequential, Magic, Playwright)",
+            "description": "MCP server integration (Context7, Sequential, Magic, Playwright, MorphLLM)",
             "category": "integration"
         }
     
@@ -212,9 +224,16 @@ class MCPComponent(Component):
                         display_warning(f"API key {api_key_env} not found in environment")
                         self.logger.warning(f"Proceeding without {api_key_env} - server may not function properly")
             
+            # Handle additional environment variables for servers like MorphLLM
+            env_vars = server_info.get("env_vars", {})
+            if env_vars and not config.get("dry_run", False):
+                for env_var, env_value in env_vars.items():
+                    display_info(f"MCP server '{server_name}' requires environment variable: {env_var}={env_value}")
+            
             # Install using Claude CLI
             if config.get("dry_run", False):
-                self.logger.info(f"Would install MCP server (user scope): claude mcp add -s user {server_name} {command}")
+                env_info = f" with env vars {env_vars}" if env_vars else ""
+                self.logger.info(f"Would install MCP server (user scope): claude mcp add -s user {server_name} {command}{env_info}")
                 return True
             
             self.logger.debug(f"Running: claude mcp add -s user {server_name} {command}")
@@ -229,6 +248,12 @@ class MCPComponent(Component):
             
             if result.returncode == 0:
                 self.logger.success(f"Successfully installed MCP server (user scope): {server_name}")
+                
+                # Log additional configuration notes for servers with special requirements
+                if env_vars:
+                    self.logger.info(f"Note: {server_name} requires environment variables: {list(env_vars.keys())}")
+                    self.logger.info("Please ensure these are set in your shell environment or Claude Code settings")
+                
                 return True
             else:
                 error_msg = result.stderr.strip() if result.stderr else "Unknown error"

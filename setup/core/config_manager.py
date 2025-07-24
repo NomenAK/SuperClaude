@@ -74,6 +74,29 @@ class ConfigManager:
                                 "required_tools": {
                                     "type": "array",
                                     "items": {"type": "string"}
+                                },
+                                "api_requirements": {
+                                    "type": "object",
+                                    "patternProperties": {
+                                        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                                            "type": "object",
+                                            "properties": {
+                                                "env_var": {"type": "string"},
+                                                "description": {"type": "string"},
+                                                "required": {"type": "boolean"},
+                                                "obtain_url": {"type": "string"}
+                                            },
+                                            "additionalProperties": False
+                                        }
+                                    }
+                                },
+                                "configuration": {
+                                    "type": "object",
+                                    "additionalProperties": True
+                                },
+                                "hook_types": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
                                 }
                             },
                             "required": ["name", "version", "description", "category"],
@@ -123,9 +146,30 @@ class ConfigManager:
                                     "type": "array",
                                     "items": {"type": "string"}
                                 },
-                                "optional": {"type": "boolean"}
+                                "optional": {"type": "boolean"},
+                                "description": {"type": "string"}
                             },
                             "required": ["command"],
+                            "additionalProperties": False
+                        }
+                    }
+                },
+                "api_keys": {
+                    "type": "object",
+                    "patternProperties": {
+                        "^[a-zA-Z_][a-zA-Z0-9_]*$": {
+                            "type": "object",
+                            "properties": {
+                                "env_var": {"type": "string"},
+                                "description": {"type": "string"},
+                                "required_for": {
+                                    "type": "array",
+                                    "items": {"type": "string"}
+                                },
+                                "optional": {"type": "boolean"},
+                                "obtain_url": {"type": "string"},
+                                "validation_command": {"type": "string"}
+                            },
                             "additionalProperties": False
                         }
                     }
@@ -140,7 +184,9 @@ class ConfigManager:
                                 "darwin": {"type": "string"},
                                 "win32": {"type": "string"},
                                 "all": {"type": "string"},
-                                "description": {"type": "string"}
+                                "description": {"type": "string"},
+                                "post_install": {"type": "string"},
+                                "example": {"type": "string"}
                             },
                             "additionalProperties": False
                         }
