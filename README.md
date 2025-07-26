@@ -106,7 +106,7 @@ uv add SuperClaude
 **Option B: From Source**
 ```bash
 git clone https://github.com/SuperClaude-Org/SuperClaude_Framework.git
-cd SuperClaude
+cd SuperClaude_Framework
 uv sync
 ```
 ### 🔧 UV / UVX Setup Guide
