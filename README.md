@@ -73,7 +73,32 @@ External tools that connect when useful:
 
 If you're coming from SuperClaude v2, you'll need to clean up first:
 
-1. **Uninstall v2** using its uninstaller if available
+1. **Uninstall v2** using its uninstaller 
+
+   to properly uninstall SuperClaude v2, you will need to use its dedicated uninstaller script. Follow these instructions:
+
+   a.  **Obtain the v2 `install.sh` script:**
+   if you already have a local copy of the v2 installation directory, the `install.sh` script should be present there. 
+   Or you can clone the v2 repository or directly downloading the `install.sh` file from `SuperClaude-v2` branch.
+
+   ```bash
+   git clone --depth 1 --branch SuperClaude-v2 https://github.com/SuperClaude-Org/SuperClaude_Framework.git SuperClaude_v2
+   cd SuperClaude_v2
+   # The install.sh script is now in your current directory
+   ```
+
+   b.  **Make the script executable:**
+   Ensure the `install.sh` script has execute permissions.
+   ```bash
+   chmod +x install.sh
+   ```
+
+   c.  **Run the uninstallation command:**
+   Execute the `install.sh` script with the `--uninstall` flag. This will remove SuperClaude v2 from its default installation location (typically `~/.claude/`).
+
+   ```bash
+   ./install.sh --uninstall
+   ```
 2. **Manual cleanup** - delete these if they exist:
    - `SuperClaude/`
    - `~/.claude/shared/`
